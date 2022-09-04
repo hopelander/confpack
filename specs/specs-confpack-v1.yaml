@@ -1,0 +1,417 @@
+openapi: 3.0.3
+info:
+  title: API for Confpack Application
+  description: |-
+    API for Confpack Application
+  contact:
+    email: am@kvartasoft.ru
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: participant
+    description: участник конференции
+paths:
+  /participant/create:
+    post:
+      tags:
+        - participant
+      summary: Добавить нового участника
+      operationId: participantCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantCreateRequest'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantCreateResponse'
+  /participant/read:
+    post:
+      tags:
+        - participant
+      summary: Получить информацию об участнике
+      operationId: participantRead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantReadRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantReadResponse'
+  /participant/update:
+    post:
+      tags:
+        - participant
+      summary: Обновить информацию об участнике
+      operationId: participantUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantUpdateResponse'
+  /participant/delete:
+    post:
+      tags:
+        - participant
+      summary: Удалить участника
+      operationId: participantDelete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantDeleteRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantDeleteResponse'
+  /participant/search:
+    post:
+      tags:
+        - participant
+      summary: Найти участников
+      operationId: participantSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantSearchRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantSearchResponse'
+components:
+  schemas:
+    IRequest:
+      type: object
+      description: Базовый интерфейс для запросов
+      properties:
+        requestType:
+          type: string
+          description: Дескриминатор для вычисления типа запроса
+          example: create
+        requestId:
+          type: string
+          description: Идентификатор запроса для отладки
+      discriminator:
+        propertyName: requestType
+        mapping:
+          create: '#/components/schemas/ParticipantCreateRequest'
+          read: '#/components/schemas/ParticipantReadRequest'
+          update: '#/components/schemas/ParticipantUpdateRequest'
+          delete: '#/components/schemas/ParticipantDeleteRequest'
+          search: '#/components/schemas/ParticipantSearchRequest'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        group:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+
+    ResponseResult:
+      type: string
+      enum:
+        - success
+        - error
+
+    IResponse:
+      type: object
+      description: Базовый интерфейс для всех ответов
+      properties:
+        responseType:
+          type: string
+          description: Поле-дескриминатор для вычисления типа ответа
+          example: create
+        requestId:
+          type: string
+          description: Идентификатор запроса для отладки
+        result:
+          $ref: '#/components/schemas/ResponseResult'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+      discriminator:
+        propertyName: responseType
+        mapping:
+          create: '#/components/schemas/ParticipantCreateResponse'
+          read: '#/components/schemas/ParticipantReadResponse'
+          update: '#/components/schemas/ParticipantUpdateResponse'
+          delete: '#/components/schemas/ParticipantDeleteResponse'
+          search: '#/components/schemas/ParticipantSearchResponse'
+
+    UserId:
+      type: string
+      description: Идентификатор пользователя
+    ParticipantId:
+      type: string
+      description: Идентификатор участника
+    ParticipantLock:
+      type: string
+      description: Версия оптимистичной блокировки
+
+    BaseParticipant:
+      type: object
+      description: Базовые свойста участника одинаковые для create и update
+      properties:
+        lastName:
+          type: string
+          description: Фамилия
+        firstName:
+          type: string
+          description: Имя
+        secondName:
+          type: string
+          description: Отчество
+        email:
+          type: string
+          description: Адрес электроннной почты
+        phone:
+          type: string
+          description: Телефон
+
+    ParticipantCreateObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseParticipant'
+
+    ParticipantCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            participant:
+              $ref: '#/components/schemas/ParticipantCreateObject'
+
+    ParticipantReadObject:
+      allOf:
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/ParticipantId'
+
+    ParticipantReadRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            participant:
+              $ref: '#/components/schemas/ParticipantReadObject'
+
+    ParticipantUpdateObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseParticipant'
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/ParticipantId'
+            lock:
+              $ref: '#/components/schemas/ParticipantLock'
+
+    ParticipantUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            participant:
+              $ref: '#/components/schemas/ParticipantUpdateObject'
+
+    ParticipantDeleteObject:
+      allOf:
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/ParticipantId'
+            lock:
+              $ref: '#/components/schemas/ParticipantLock'
+
+    ParticipantDeleteRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            participant:
+              $ref: '#/components/schemas/ParticipantDeleteObject'
+
+    ParticipantSearchFilter:
+      type: object
+      description: Набор фильтров для поиска
+      properties:
+        searchString:
+          type: string
+          description: Поисковая строка для поиска участников
+
+    ParticipantSearchRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            participantFilter:
+              $ref: '#/components/schemas/ParticipantSearchFilter'
+
+    PackageStatusUpdateObject:
+      type: object
+      properties:
+        delivered:
+          type: boolean
+          description: Флаг подтверждающий выдачу материалов
+        deliveryAt:
+          type: string
+          description: Дата и время выдачи материалов
+    PackageStatusUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/ParticipantRequestDebug'
+        - type: object
+          properties:
+            packageStatus:
+              $ref: '#/components/schemas/PackageStatusUpdateObject'
+
+    # Responses
+
+    ParticipantResponseObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseParticipant'
+        - type: object
+          description: Объект, который возвращается в ответе бэкенда
+          properties:
+            id:
+              $ref: '#/components/schemas/ParticipantId'
+            ownerId:
+              $ref: '#/components/schemas/UserId'
+            lock:
+              $ref: '#/components/schemas/ParticipantLock'
+            permissions:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/ParticipantPermissions'
+
+    ParticipantPermissions:
+      type: string
+      description: Доступы для клиента для операций над участником
+      enum:
+        - read
+        - update
+        - delete
+
+    ParticipantResponseSingle:
+      allOf:
+        - type: object
+          description: Ответ с одним участником
+          properties:
+            participant:
+              $ref: '#/components/schemas/ParticipantResponseObject'
+
+    ParticipantResponseMulti:
+      allOf:
+        - type: object
+          description: Список найденных участников
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantResponseObject'
+
+    ParticipantCreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseSingle'
+
+    ParticipantReadResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseSingle'
+
+    ParticipantUpdateResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseSingle'
+
+    ParticipantDeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseSingle'
+
+    ParticipantSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseMulti'
+
+    ParticipantOffersResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/ParticipantResponseSingle'
+        - $ref: '#/components/schemas/ParticipantResponseMulti'
+
+    # STUBS
+    RequestDebugMode:
+      type: string
+      enum:
+        - prod
+        - test
+        - stub
+
+    ParticipantRequestDebug:
+      type: object
+      properties:
+        debug:
+          $ref: '#/components/schemas/ParticipantDebug'
+
+    ParticipantDebug:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/RequestDebugMode'
+        stub:
+          $ref: '#/components/schemas/ParticipantRequestDebugStubs'
+
+    ParticipantRequestDebugStubs:
+      type: string
+      description: Перечисления всех стабов
+      enum:
+        - success
+        - notFound
+        - badId
+        - badEmail
+        - badPhone
+        - cannotDelete
+        - badSearchString
