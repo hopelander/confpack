@@ -8,17 +8,26 @@ plugins {
     id("io.ktor.plugin") version "2.1.0"
 }
 
-group = "com.example"
+group = "ru.kvartasoft"
 version = "0.0.1"
+
 application {
     mainClass.set("com.example.ApplicationKt")
-
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+
+subprojects {
+    group = rootProject.group
+    version = rootProject.version
 }
 
 dependencies {
